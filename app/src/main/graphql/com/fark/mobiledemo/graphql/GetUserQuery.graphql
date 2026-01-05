@@ -1,0 +1,25 @@
+query GetUser($id: ID!) {
+  user(id: $id) {
+    id
+    email
+    name
+    status
+    description
+    metadata
+    tags
+    paymentMethod {
+      ... on CreditCard {
+        type
+        last4
+      }
+      ... on DebitCard {
+        type
+        bank
+      }
+      ... on PayPal {
+        email
+      }
+    }
+  }
+}
+
