@@ -1,0 +1,24 @@
+mutation CreateOrder(
+  $userId: ID!
+  $productIds: [ID!]!
+  $status: OrderStatus!
+  $total: Float!
+  $discountCode: String
+  $shippingAddress: AddressInput!
+) {
+  createOrder(
+    userId: $userId
+    productIds: $productIds
+    status: $status
+    total: $total
+    discountCode: $discountCode
+    shippingAddress: $shippingAddress
+  ) {
+    id
+    userId
+    productIds
+    status
+    total
+  }
+}
+

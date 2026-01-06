@@ -1,0 +1,24 @@
+mutation CreateUser(
+  $email: String!
+  $name: String!
+  $status: UserStatus!
+  $description: String
+  $metadata: JSON
+  $tags: [String!]!
+  $paymentMethod: PaymentMethodInput!
+) {
+  createUser(
+    email: $email
+    name: $name
+    status: $status
+    description: $description
+    metadata: $metadata
+    tags: $tags
+    paymentMethod: $paymentMethod
+  ) {
+    id
+    email
+    name
+    status
+  }
+}

@@ -1,0 +1,24 @@
+query GetUsers {
+  users {
+    id
+    email
+    name
+    status
+    description
+    metadata
+    tags
+    paymentMethod {
+      ... on CreditCard {
+        type
+        last4
+      }
+      ... on DebitCard {
+        type
+        bank
+      }
+      ... on PayPal {
+        email
+      }
+    }
+  }
+}

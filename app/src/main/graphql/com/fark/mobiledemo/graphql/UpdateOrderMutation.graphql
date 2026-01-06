@@ -1,0 +1,26 @@
+mutation UpdateOrder(
+  $id: ID!
+  $userId: ID!
+  $productIds: [ID!]!
+  $status: OrderStatus!
+  $total: Float!
+  $discountCode: String
+  $shippingAddress: AddressInput!
+) {
+  updateOrder(
+    id: $id
+    userId: $userId
+    productIds: $productIds
+    status: $status
+    total: $total
+    discountCode: $discountCode
+    shippingAddress: $shippingAddress
+  ) {
+    id
+    userId
+    productIds
+    status
+    total
+  }
+}
+

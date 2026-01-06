@@ -1,0 +1,24 @@
+mutation UpdateProduct(
+  $id: ID!
+  $name: String!
+  $price: Float!
+  $category: String!
+  $inStock: Boolean!
+  $specifications: [ProductSpecInput!]!
+) {
+  updateProduct(
+    id: $id
+    name: $name
+    price: $price
+    category: $category
+    inStock: $inStock
+    specifications: $specifications
+  ) {
+    id
+    name
+    price
+    category
+    inStock
+  }
+}
+

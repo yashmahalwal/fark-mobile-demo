@@ -1,0 +1,17 @@
+query GetOrders {
+  orders {
+    id
+    userId
+    productIds
+    status
+    total
+    discountCode
+    shippingAddress {
+      street
+      city
+      zipCode
+      country
+    }
+  }
+}
+

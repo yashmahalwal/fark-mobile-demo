@@ -1,0 +1,13 @@
+query GetProducts {
+  products {
+    id
+    name
+    price
+    category
+    inStock
+    specifications {
+      key
+      value
+    }
+  }
+}
