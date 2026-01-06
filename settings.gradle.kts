@@ -17,3 +17,6 @@ dependencyResolutionManagement {
 rootProject.name = "FarkMobileDemo"
 include(":app")
 
+
+
+

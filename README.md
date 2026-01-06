@@ -103,3 +103,6 @@ When the backend introduces breaking changes (e.g., `email` → `emailAddress`),
 - Uses Kotlin coroutines for async operations
 - View Binding is enabled for type-safe view access
 
+
+
+

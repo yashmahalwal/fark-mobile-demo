@@ -1,7 +1,6 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    id("com.apollographql.apollo3")
 }
 
 android {
@@ -16,6 +15,8 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField("String", "REST_API_BASE_URL", "\"http://10.0.2.2:3000/api/\"")
     }
 
     buildTypes {
@@ -28,20 +29,15 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "11"
     }
     buildFeatures {
+        buildConfig = true
         viewBinding = true
-    }
-}
-
-apollo {
-    service("service") {
-        packageName.set("com.fark.mobiledemo.graphql")
     }
 }
 
@@ -59,15 +55,6 @@ dependencies {
     implementation("com.google.code.gson:gson:2.10.1")
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
-    
-    // GraphQL - Apollo
-    implementation("com.apollographql.apollo3:apollo-runtime:3.8.2")
-    
-    // gRPC
-    implementation("io.grpc:grpc-okhttp:1.59.0")
-    implementation("io.grpc:grpc-protobuf-lite:1.59.0")
-    implementation("io.grpc:grpc-stub:1.59.0")
-    implementation("javax.annotation:javax.annotation-api:1.3.2")
     
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
