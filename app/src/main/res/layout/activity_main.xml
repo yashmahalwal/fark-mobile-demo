@@ -1,141 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:padding="16dp">
+    android:layout_height="match_parent">
 
-    <LinearLayout
+    <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
 
-        <!-- REST API Section -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/rest_api"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="8dp" />
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorPrimary"
+            app:title="Fark Mobile Demo"
+            app:titleTextColor="@android:color/white" />
 
-        <EditText
-            android:id="@+id/etRestUserId"
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/tabLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/user_id"
-            android:inputType="number"
-            android:text="1" />
+            app:tabMode="fixed"
+            app:tabGravity="fill" />
 
-        <Button
-            android:id="@+id/btnRestGetUser"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/fetch_user"
-            android:layout_marginTop="8dp" />
+    </com.google.android.material.appbar.AppBarLayout>
 
-        <Button
-            android:id="@+id/btnRestCreateUser"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Create User (REST)"
-            android:layout_marginTop="8dp" />
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/fragmentContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
-        <TextView
-            android:id="@+id/tvRestResult"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:padding="8dp"
-            android:background="#F0F0F0"
-            android:text="REST API results will appear here" />
-
-        <!-- GraphQL API Section -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/graphql_api"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:layout_marginTop="24dp"
-            android:layout_marginBottom="8dp" />
-
-        <EditText
-            android:id="@+id/etGraphqlUserId"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/user_id"
-            android:inputType="number"
-            android:text="1" />
-
-        <Button
-            android:id="@+id/btnGraphqlGetUser"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/fetch_user"
-            android:layout_marginTop="8dp" />
-
-        <Button
-            android:id="@+id/btnGraphqlCreateUser"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Create User (GraphQL)"
-            android:layout_marginTop="8dp" />
-
-        <TextView
-            android:id="@+id/tvGraphqlResult"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:padding="8dp"
-            android:background="#F0F0F0"
-            android:text="GraphQL API results will appear here" />
-
-        <!-- gRPC API Section -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/grpc_api"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:layout_marginTop="24dp"
-            android:layout_marginBottom="8dp" />
-
-        <EditText
-            android:id="@+id/etGrpcUserId"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/user_id"
-            android:inputType="number"
-            android:text="1" />
-
-        <Button
-            android:id="@+id/btnGrpcGetUser"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/fetch_user"
-            android:layout_marginTop="8dp" />
-
-        <Button
-            android:id="@+id/btnGrpcListUsers"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="List Users (gRPC)"
-            android:layout_marginTop="8dp" />
-
-        <TextView
-            android:id="@+id/tvGrpcResult"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:padding="8dp"
-            android:background="#F0F0F0"
-            android:text="gRPC API results will appear here" />
-
-    </LinearLayout>
-</ScrollView>
-
-
-
-
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

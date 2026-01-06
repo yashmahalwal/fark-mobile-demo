@@ -1,6 +1,7 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    id("com.apollographql.apollo3") version "3.8.2"
 }
 
 android {
@@ -41,6 +42,12 @@ android {
     }
 }
 
+apollo {
+    service("service") {
+        packageName.set("com.fark.mobiledemo.graphql")
+    }
+}
+
 dependencies {
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.appcompat:appcompat:1.6.1")
@@ -58,6 +65,15 @@ dependencies {
     
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+    
+    // Apollo GraphQL
+    implementation("com.apollographql.apollo3:apollo-runtime:3.8.2")
+    
+    // RecyclerView
+    implementation("androidx.recyclerview:recyclerview:1.3.2")
+    implementation("androidx.fragment:fragment-ktx:1.6.2")
+    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
+    implementation("androidx.coordinatorlayout:coordinatorlayout:1.2.0")
     
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
