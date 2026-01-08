@@ -27,8 +27,7 @@ data class User(
     val status: UserStatus,
     val description: String?, // nullable field
     val metadata: Map<String, Any>?,
-    val tags: List<String>, // array structure
-    val paymentMethod: PaymentMethod
+    val tags: List<String> // array structure
 )
 
 data class Product(

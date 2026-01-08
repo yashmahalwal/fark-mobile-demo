@@ -7,8 +7,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.fark.mobiledemo.ui.screens.Order
-import com.fark.mobiledemo.ui.screens.ShippingAddress
+import com.fark.mobiledemo.models.Order
+import com.fark.mobiledemo.models.Address
+import com.fark.mobiledemo.models.OrderStatus
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -19,7 +20,7 @@ fun OrderDialog(
 ) {
     var userId by remember { mutableStateOf(order?.userId?.toString() ?: "") }
     var productIds by remember { mutableStateOf(order?.productIds?.joinToString(", ") ?: "") }
-    var status by remember { mutableStateOf(order?.status ?: "pending") }
+    var status by remember { mutableStateOf(order?.status ?: OrderStatus.CREATED) }
     var total by remember { mutableStateOf(order?.total?.toString() ?: "") }
     var discountCode by remember { mutableStateOf(order?.discountCode ?: "") }
     var street by remember { mutableStateOf(order?.shippingAddress?.street ?: "") }
@@ -28,7 +29,6 @@ fun OrderDialog(
     var country by remember { mutableStateOf(order?.shippingAddress?.country ?: "") }
     
     var expandedStatus by remember { mutableStateOf(false) }
-    val statuses = listOf("pending", "processing", "shipped", "delivered", "cancelled")
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -59,7 +59,7 @@ fun OrderDialog(
                     onExpandedChange = { expandedStatus = it }
                 ) {
                     OutlinedTextField(
-                        value = status,
+                        value = status.name,
                         onValueChange = {},
                         readOnly = true,
                         label = { Text("Status") },
@@ -72,9 +72,9 @@ fun OrderDialog(
                         expanded = expandedStatus,
                         onDismissRequest = { expandedStatus = false }
                     ) {
-                        statuses.forEach { item ->
+                        OrderStatus.values().forEach { item ->
                             DropdownMenuItem(
-                                text = { Text(item) },
+                                text = { Text(item.name) },
                                 onClick = {
                                     status = item
                                     expandedStatus = false
@@ -144,7 +144,7 @@ fun OrderDialog(
                             status = status,
                             total = total.toDoubleOrNull() ?: 0.0,
                             discountCode = discountCode.ifEmpty { null },
-                            shippingAddress = ShippingAddress(
+                            shippingAddress = Address(
                                 street = street,
                                 city = city,
                                 zipCode = zipCode,

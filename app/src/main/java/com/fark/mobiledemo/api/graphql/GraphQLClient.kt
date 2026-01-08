@@ -1,22 +1,77 @@
 package com.fark.mobiledemo.api.graphql
 
+import android.util.Log
 import com.apollographql.apollo3.ApolloClient
 import com.apollographql.apollo3.api.Optional
+import com.apollographql.apollo3.network.http.DefaultHttpEngine
 import com.fark.mobiledemo.graphql.*
 import com.fark.mobiledemo.models.*
 import com.fark.mobiledemo.graphql.type.PaymentMethodInput
 import com.fark.mobiledemo.graphql.type.AddressInput
 import com.fark.mobiledemo.graphql.type.ProductSpecInput
+import okhttp3.ConnectionPool
+import okhttp3.Interceptor
+import okhttp3.OkHttpClient
+import java.util.concurrent.TimeUnit
 
 class GraphQLClient {
-    private val apolloClient = ApolloClient.Builder()
-        .serverUrl("http://10.0.2.2:3000/graphql") // Android emulator localhost
+    private val graphqlUrl = "http://10.0.2.2:3000/graphql"
+    
+    // Logging interceptor to debug actual URLs
+    private val loggingInterceptor = Interceptor { chain ->
+        val request = chain.request()
+        Log.d(TAG, "=== Apollo HTTP Request ===")
+        Log.d(TAG, "URL: ${request.url}")
+        Log.d(TAG, "Method: ${request.method}")
+        Log.d(TAG, "Headers: ${request.headers}")
+        
+        try {
+            val response = chain.proceed(request)
+            Log.d(TAG, "Response Code: ${response.code}")
+            response
+        } catch (e: Exception) {
+            Log.e(TAG, "Request failed: ${e.message}", e)
+            throw e
+        }
+    }
+    
+    // Create fresh OkHttp client with no connection pooling
+    private val okHttpClient = OkHttpClient.Builder()
+        .addInterceptor(loggingInterceptor)
+        .connectionPool(ConnectionPool(0, 1, TimeUnit.MILLISECONDS))
+        .retryOnConnectionFailure(false)
         .build()
+    
+    private val apolloClient = ApolloClient.Builder()
+        .serverUrl(graphqlUrl)
+        .httpEngine(DefaultHttpEngine(okHttpClient))
+        .build()
+    
+    init {
+        Log.d(TAG, "Using GraphQL URL: $graphqlUrl")
+    }
+    
+    companion object {
+        private const val TAG = "GraphQLClient"
+    }
     
     // Users CRUD
     suspend fun getUsers(): Result<List<User>> {
         return try {
+            Log.d(TAG, "Fetching users from GraphQL...")
             val response = apolloClient.query(GetUsersQuery()).execute()
+            
+            // Log raw response for debugging
+            Log.d(TAG, "Response hasErrors: ${response.hasErrors()}")
+            Log.d(TAG, "Response errors: ${response.errors}")
+            Log.d(TAG, "Response data: ${response.data}")
+            
+            if (response.hasErrors()) {
+                val errorMessage = response.errors?.joinToString(", ") { it.message }
+                Log.e(TAG, "GraphQL errors: $errorMessage")
+                return Result.failure(Exception("GraphQL Error: $errorMessage"))
+            }
+            
             if (response.data?.users != null) {
                 val users = response.data!!.users.map { userData ->
                     User(
@@ -26,49 +81,30 @@ class GraphQLClient {
                         status = UserStatus.valueOf(userData.status.name),
                         description = userData.description,
                         metadata = userData.metadata as? Map<String, Any>,
-                        tags = userData.tags,
-                        paymentMethod = when (userData.paymentMethod.__typename) {
-                            "CreditCard" -> PaymentMethod.CREDIT_CARD
-                            "DebitCard" -> PaymentMethod.DEBIT_CARD
-                            "PayPal" -> PaymentMethod.PAYPAL
-                            else -> PaymentMethod.CREDIT_CARD
-                        }
+                        tags = userData.tags
                     )
                 }
+                Log.d(TAG, "Successfully fetched ${users.size} users")
                 Result.success(users)
             } else {
-                Result.failure(Exception("Failed to fetch users"))
+                Log.e(TAG, "Response data is null")
+                Result.failure(Exception("No data returned from server"))
             }
         } catch (e: Exception) {
+            Log.e(TAG, "Exception fetching users", e)
             Result.failure(e)
         }
     }
     
     suspend fun createUser(user: User): Result<User> {
         return try {
-            val paymentMethodInput = when (user.paymentMethod) {
-                PaymentMethod.CREDIT_CARD -> 
-                    PaymentMethodInput(
-                        type = Optional.present("Visa"),
-                        last4 = Optional.present("1234"),
-                        bank = Optional.absent(),
-                        email = Optional.absent()
-                    )
-                PaymentMethod.DEBIT_CARD ->
-                    PaymentMethodInput(
-                        type = Optional.present("Debit"),
-                        bank = Optional.present("Test Bank"),
-                        last4 = Optional.absent(),
-                        email = Optional.absent()
-                    )
-                PaymentMethod.PAYPAL ->
-                    PaymentMethodInput(
-                        email = Optional.present("test@paypal.com"),
-                        type = Optional.absent(),
-                        last4 = Optional.absent(),
-                        bank = Optional.absent()
-                    )
-            }
+            // Use default CREDIT_CARD payment method
+            val paymentMethodInput = PaymentMethodInput(
+                type = Optional.present("Visa"),
+                last4 = Optional.present("1234"),
+                bank = Optional.absent(),
+                email = Optional.absent()
+            )
             
             val mutation = CreateUserMutation(
                 email = user.email,
@@ -95,8 +131,7 @@ class GraphQLClient {
                         status = UserStatus.valueOf(createdUser.status.name),
                         description = null,
                         metadata = null,
-                        tags = emptyList(),
-                        paymentMethod = PaymentMethod.CREDIT_CARD
+                        tags = emptyList()
                     )
                 )
             } else {
@@ -110,29 +145,13 @@ class GraphQLClient {
     
     suspend fun updateUser(user: User): Result<User> {
         return try {
-            val paymentMethodInput = when (user.paymentMethod) {
-                PaymentMethod.CREDIT_CARD -> 
-                    PaymentMethodInput(
-                        type = Optional.present("Visa"),
-                        last4 = Optional.present("1234"),
-                        bank = Optional.absent(),
-                        email = Optional.absent()
-                    )
-                PaymentMethod.DEBIT_CARD ->
-                    PaymentMethodInput(
-                        type = Optional.present("Debit"),
-                        bank = Optional.present("Test Bank"),
-                        last4 = Optional.absent(),
-                        email = Optional.absent()
-                    )
-                PaymentMethod.PAYPAL ->
-                    PaymentMethodInput(
-                        email = Optional.present("test@paypal.com"),
-                        type = Optional.absent(),
-                        last4 = Optional.absent(),
-                        bank = Optional.absent()
-                    )
-            }
+            // Use default CREDIT_CARD payment method
+            val paymentMethodInput = PaymentMethodInput(
+                type = Optional.present("Visa"),
+                last4 = Optional.present("1234"),
+                bank = Optional.absent(),
+                email = Optional.absent()
+            )
             
             val mutation = UpdateUserMutation(
                 id = user.id.toString(),
@@ -160,8 +179,7 @@ class GraphQLClient {
                         status = UserStatus.valueOf(updatedUser.status.name),
                         description = null,
                         metadata = null,
-                        tags = emptyList(),
-                        paymentMethod = PaymentMethod.CREDIT_CARD
+                        tags = emptyList()
                     )
                 )
             } else {

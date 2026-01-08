@@ -1,58 +1,55 @@
 package com.fark.mobiledemo.api.rest
 
+import android.util.Log
 import com.fark.mobiledemo.BuildConfig
-import com.fark.mobiledemo.models.User
-import com.fark.mobiledemo.models.Order
-import com.fark.mobiledemo.models.Product
-import okhttp3.OkHttpClient
-import okhttp3.logging.HttpLoggingInterceptor
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
-import java.util.concurrent.TimeUnit
+import com.fark.mobiledemo.models.*
+import com.google.gson.Gson
+import io.ktor.client.*
+import io.ktor.client.engine.android.*
+import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.client.plugins.logging.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
+import io.ktor.http.*
+import io.ktor.serialization.gson.*
 
 class RestApiClient {
-    private val baseUrl = BuildConfig.REST_API_BASE_URL
+    private val baseUrl = BuildConfig.REST_API_BASE_URL.trimEnd('/')
+    private val gson = Gson()
     
-    private val loggingInterceptor = HttpLoggingInterceptor().apply {
-        level = HttpLoggingInterceptor.Level.BODY
+    init {
+        Log.d("RestApiClient", "Using base URL: $baseUrl")
     }
     
-    private val okHttpClient = OkHttpClient.Builder()
-        .addInterceptor(loggingInterceptor)
-        .connectTimeout(30, TimeUnit.SECONDS)
-        .readTimeout(30, TimeUnit.SECONDS)
-        .build()
-    
-    private val retrofit = Retrofit.Builder()
-        .baseUrl(baseUrl)
-        .client(okHttpClient)
-        .addConverterFactory(GsonConverterFactory.create())
-        .build()
-    
-    private val apiService: RestApiService = retrofit.create(RestApiService::class.java)
-    
-    suspend fun getUser(id: Int): Result<User> {
-        return try {
-            val response = apiService.getUser(id)
-            if (response.isSuccessful && response.body() != null) {
-                Result.success(response.body()!!)
-            } else {
-                Result.failure(Exception("Failed to fetch user: ${response.code()}"))
+    private val client = HttpClient(Android) {
+        install(ContentNegotiation) {
+            gson()
+        }
+        install(Logging) {
+            logger = object : Logger {
+                override fun log(message: String) {
+                    Log.d("RestApiClient", message)
+                }
             }
-        } catch (e: Exception) {
-            Result.failure(e)
+            level = LogLevel.ALL
         }
     }
     
     suspend fun getUsers(): Result<List<User>> {
         return try {
-            val response = apiService.getUsers()
-            if (response.isSuccessful && response.body() != null) {
-                Result.success(response.body()!!)
+            Log.d("RestApiClient", "GET $baseUrl/users")
+            val response: HttpResponse = client.get("$baseUrl/users")
+            
+            if (response.status.isSuccess()) {
+                val json = response.bodyAsText()
+                Log.d("RestApiClient", "Response: $json")
+                val usersArray = gson.fromJson(json, Array<User>::class.java)
+                Result.success(usersArray.toList())
             } else {
-                Result.failure(Exception("Failed to fetch users: ${response.code()}"))
+                Result.failure(Exception("Failed to fetch users: ${response.status}"))
             }
         } catch (e: Exception) {
+            Log.e("RestApiClient", "Error fetching users", e)
             Result.failure(e)
         }
     }
@@ -66,16 +63,24 @@ class RestApiClient {
                 description = user.description,
                 metadata = user.metadata,
                 tags = user.tags,
-                paymentMethod = user.paymentMethod.name
+                paymentMethod = "CREDIT_CARD" // Default value
             )
-            val response = apiService.createUser(request)
-            if (response.isSuccessful && response.body() != null) {
-                Result.success(response.body()!!)
+            
+            val json = gson.toJson(request)
+            val response: HttpResponse = client.post("$baseUrl/users") {
+                contentType(ContentType.Application.Json)
+                setBody(json)
+            }
+            
+            if (response.status.isSuccess()) {
+                val json = response.bodyAsText()
+                val result = gson.fromJson(json, CreateUserResponse::class.java)
+                Result.success(result)
             } else {
-                val errorBody = response.errorBody()?.string()
-                Result.failure(Exception("Failed to create user: ${response.code()} - $errorBody"))
+                Result.failure(Exception("Failed to create user: ${response.status} - ${response.bodyAsText()}"))
             }
         } catch (e: Exception) {
+            Log.e("RestApiClient", "Error creating user", e)
             Result.failure(e)
         }
     }
@@ -89,56 +94,58 @@ class RestApiClient {
                 description = user.description,
                 metadata = user.metadata,
                 tags = user.tags,
-                paymentMethod = user.paymentMethod.name
+                paymentMethod = "CREDIT_CARD" // Default value
             )
-            val response = apiService.updateUser(id, request)
-            if (response.isSuccessful && response.body() != null) {
-                Result.success(response.body()!!)
+            
+            val json = gson.toJson(request)
+            val response: HttpResponse = client.put("$baseUrl/users/$id") {
+                contentType(ContentType.Application.Json)
+                setBody(json)
+            }
+            
+            if (response.status.isSuccess()) {
+                val json = response.bodyAsText()
+                val result = gson.fromJson(json, UpdateUserResponse::class.java)
+                Result.success(result)
             } else {
-                val errorBody = response.errorBody()?.string()
-                Result.failure(Exception("Failed to update user: ${response.code()} - $errorBody"))
+                Result.failure(Exception("Failed to update user: ${response.status} - ${response.bodyAsText()}"))
             }
         } catch (e: Exception) {
+            Log.e("RestApiClient", "Error updating user", e)
             Result.failure(e)
         }
     }
     
     suspend fun deleteUser(id: Int): Result<DeleteUserResponse> {
         return try {
-            val response = apiService.deleteUser(id)
-            if (response.isSuccessful && response.body() != null) {
-                Result.success(response.body()!!)
+            val response: HttpResponse = client.delete("$baseUrl/users/$id")
+            
+            if (response.status.isSuccess()) {
+                val json = response.bodyAsText()
+                val result = gson.fromJson(json, DeleteUserResponse::class.java)
+                Result.success(result)
             } else {
-                val errorBody = response.errorBody()?.string()
-                Result.failure(Exception("Failed to delete user: ${response.code()} - $errorBody"))
+                Result.failure(Exception("Failed to delete user: ${response.status} - ${response.bodyAsText()}"))
             }
         } catch (e: Exception) {
-            Result.failure(e)
-        }
-    }
-    
-    suspend fun getOrder(id: Int): Result<Order> {
-        return try {
-            val response = apiService.getOrder(id)
-            if (response.isSuccessful && response.body() != null) {
-                Result.success(response.body()!!)
-            } else {
-                Result.failure(Exception("Failed to fetch order: ${response.code()}"))
-            }
-        } catch (e: Exception) {
+            Log.e("RestApiClient", "Error deleting user", e)
             Result.failure(e)
         }
     }
     
     suspend fun getOrders(): Result<List<Order>> {
         return try {
-            val response = apiService.getOrders()
-            if (response.isSuccessful && response.body() != null) {
-                Result.success(response.body()!!)
+            val response: HttpResponse = client.get("$baseUrl/orders")
+            
+            if (response.status.isSuccess()) {
+                val json = response.bodyAsText()
+                val orders = gson.fromJson(json, Array<Order>::class.java).toList()
+                Result.success(orders)
             } else {
-                Result.failure(Exception("Failed to fetch orders: ${response.code()}"))
+                Result.failure(Exception("Failed to fetch orders: ${response.status}"))
             }
         } catch (e: Exception) {
+            Log.e("RestApiClient", "Error fetching orders", e)
             Result.failure(e)
         }
     }
@@ -158,26 +165,170 @@ class RestApiClient {
                     "country" to order.shippingAddress.country
                 )
             )
-            val response = apiService.createOrder(request)
-            if (response.isSuccessful && response.body() != null) {
-                Result.success(response.body()!!)
+            
+            val json = gson.toJson(request)
+            val response: HttpResponse = client.post("$baseUrl/orders") {
+                contentType(ContentType.Application.Json)
+                setBody(json)
+            }
+            
+            if (response.status.isSuccess()) {
+                val responseJson = response.bodyAsText()
+                val result = gson.fromJson(responseJson, CreateOrderResponse::class.java)
+                Result.success(result)
             } else {
-                Result.failure(Exception("Failed to create order: ${response.code()}"))
+                Result.failure(Exception("Failed to create order: ${response.status}"))
             }
         } catch (e: Exception) {
+            Log.e("RestApiClient", "Error creating order", e)
+            Result.failure(e)
+        }
+    }
+    
+    suspend fun updateOrder(id: Int, order: Order): Result<UpdateOrderResponse> {
+        return try {
+            val request = CreateOrderRequest(
+                userId = order.userId,
+                productIds = order.productIds,
+                status = order.status.name,
+                total = order.total,
+                discountCode = order.discountCode,
+                shippingAddress = mapOf(
+                    "street" to order.shippingAddress.street,
+                    "city" to order.shippingAddress.city,
+                    "zipCode" to order.shippingAddress.zipCode,
+                    "country" to order.shippingAddress.country
+                )
+            )
+            
+            val json = gson.toJson(request)
+            val response: HttpResponse = client.put("$baseUrl/orders/$id") {
+                contentType(ContentType.Application.Json)
+                setBody(json)
+            }
+            
+            if (response.status.isSuccess()) {
+                val responseJson = response.bodyAsText()
+                val result = gson.fromJson(responseJson, UpdateOrderResponse::class.java)
+                Result.success(result)
+            } else {
+                Result.failure(Exception("Failed to update order: ${response.status}"))
+            }
+        } catch (e: Exception) {
+            Log.e("RestApiClient", "Error updating order", e)
+            Result.failure(e)
+        }
+    }
+    
+    suspend fun deleteOrder(id: Int): Result<DeleteOrderResponse> {
+        return try {
+            val response: HttpResponse = client.delete("$baseUrl/orders/$id")
+            
+            if (response.status.isSuccess()) {
+                val json = response.bodyAsText()
+                val result = gson.fromJson(json, DeleteOrderResponse::class.java)
+                Result.success(result)
+            } else {
+                Result.failure(Exception("Failed to delete order: ${response.status}"))
+            }
+        } catch (e: Exception) {
+            Log.e("RestApiClient", "Error deleting order", e)
             Result.failure(e)
         }
     }
     
     suspend fun getProducts(): Result<List<Product>> {
         return try {
-            val response = apiService.getProducts()
-            if (response.isSuccessful && response.body() != null) {
-                Result.success(response.body()!!)
+            val response: HttpResponse = client.get("$baseUrl/products")
+            
+            if (response.status.isSuccess()) {
+                val json = response.bodyAsText()
+                val products = gson.fromJson(json, Array<Product>::class.java).toList()
+                Result.success(products)
             } else {
-                Result.failure(Exception("Failed to fetch products: ${response.code()}"))
+                Result.failure(Exception("Failed to fetch products: ${response.status}"))
             }
         } catch (e: Exception) {
+            Log.e("RestApiClient", "Error fetching products", e)
+            Result.failure(e)
+        }
+    }
+    
+    suspend fun createProduct(product: Product): Result<CreateProductResponse> {
+        return try {
+            val request = CreateProductRequest(
+                name = product.name,
+                price = product.price,
+                category = product.category,
+                inStock = product.inStock,
+                specifications = product.specifications.map { 
+                    mapOf("key" to it.key, "value" to it.value) 
+                }
+            )
+            
+            val json = gson.toJson(request)
+            val response: HttpResponse = client.post("$baseUrl/products") {
+                contentType(ContentType.Application.Json)
+                setBody(json)
+            }
+            
+            if (response.status.isSuccess()) {
+                val responseJson = response.bodyAsText()
+                val result = gson.fromJson(responseJson, CreateProductResponse::class.java)
+                Result.success(result)
+            } else {
+                Result.failure(Exception("Failed to create product: ${response.status}"))
+            }
+        } catch (e: Exception) {
+            Log.e("RestApiClient", "Error creating product", e)
+            Result.failure(e)
+        }
+    }
+    
+    suspend fun updateProduct(id: Int, product: Product): Result<UpdateProductResponse> {
+        return try {
+            val request = CreateProductRequest(
+                name = product.name,
+                price = product.price,
+                category = product.category,
+                inStock = product.inStock,
+                specifications = product.specifications.map { 
+                    mapOf("key" to it.key, "value" to it.value) 
+                }
+            )
+            
+            val json = gson.toJson(request)
+            val response: HttpResponse = client.put("$baseUrl/products/$id") {
+                contentType(ContentType.Application.Json)
+                setBody(json)
+            }
+            
+            if (response.status.isSuccess()) {
+                val responseJson = response.bodyAsText()
+                val result = gson.fromJson(responseJson, UpdateProductResponse::class.java)
+                Result.success(result)
+            } else {
+                Result.failure(Exception("Failed to update product: ${response.status}"))
+            }
+        } catch (e: Exception) {
+            Log.e("RestApiClient", "Error updating product", e)
+            Result.failure(e)
+        }
+    }
+    
+    suspend fun deleteProduct(id: Int): Result<DeleteProductResponse> {
+        return try {
+            val response: HttpResponse = client.delete("$baseUrl/products/$id")
+            
+            if (response.status.isSuccess()) {
+                val json = response.bodyAsText()
+                val result = gson.fromJson(json, DeleteProductResponse::class.java)
+                Result.success(result)
+            } else {
+                Result.failure(Exception("Failed to delete product: ${response.status}"))
+            }
+        } catch (e: Exception) {
+            Log.e("RestApiClient", "Error deleting product", e)
             Result.failure(e)
         }
     }

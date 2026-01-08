@@ -7,7 +7,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.fark.mobiledemo.ui.screens.User
+import com.fark.mobiledemo.models.User
+import com.fark.mobiledemo.models.UserStatus
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -18,16 +19,11 @@ fun UserDialog(
 ) {
     var email by remember { mutableStateOf(user?.email ?: "") }
     var name by remember { mutableStateOf(user?.name ?: "") }
-    var status by remember { mutableStateOf(user?.status ?: "active") }
+    var status by remember { mutableStateOf(user?.status ?: UserStatus.ACTIVE) }
     var description by remember { mutableStateOf(user?.description ?: "") }
     var tags by remember { mutableStateOf(user?.tags?.joinToString(", ") ?: "") }
-    var paymentMethod by remember { mutableStateOf(user?.paymentMethod ?: "credit_card") }
     
     var expandedStatus by remember { mutableStateOf(false) }
-    var expandedPayment by remember { mutableStateOf(false) }
-    
-    val statuses = listOf("active", "inactive", "pending")
-    val paymentMethods = listOf("credit_card", "debit_card", "paypal", "crypto")
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -58,7 +54,7 @@ fun UserDialog(
                     onExpandedChange = { expandedStatus = it }
                 ) {
                     OutlinedTextField(
-                        value = status,
+                        value = status.name,
                         onValueChange = {},
                         readOnly = true,
                         label = { Text("Status") },
@@ -71,9 +67,9 @@ fun UserDialog(
                         expanded = expandedStatus,
                         onDismissRequest = { expandedStatus = false }
                     ) {
-                        statuses.forEach { item ->
+                        UserStatus.values().forEach { item ->
                             DropdownMenuItem(
-                                text = { Text(item) },
+                                text = { Text(item.name) },
                                 onClick = {
                                     status = item
                                     expandedStatus = false
@@ -97,36 +93,6 @@ fun UserDialog(
                     label = { Text("Tags (comma-separated)") },
                     modifier = Modifier.fillMaxWidth()
                 )
-
-                ExposedDropdownMenuBox(
-                    expanded = expandedPayment,
-                    onExpandedChange = { expandedPayment = it }
-                ) {
-                    OutlinedTextField(
-                        value = paymentMethod,
-                        onValueChange = {},
-                        readOnly = true,
-                        label = { Text("Payment Method") },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedPayment) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .menuAnchor()
-                    )
-                    ExposedDropdownMenu(
-                        expanded = expandedPayment,
-                        onDismissRequest = { expandedPayment = false }
-                    ) {
-                        paymentMethods.forEach { item ->
-                            DropdownMenuItem(
-                                text = { Text(item) },
-                                onClick = {
-                                    paymentMethod = item
-                                    expandedPayment = false
-                                }
-                            )
-                        }
-                    }
-                }
             }
         },
         confirmButton = {
@@ -138,9 +104,9 @@ fun UserDialog(
                             email = email,
                             name = name,
                             status = status,
-                            description = description,
-                            tags = tags.split(",").map { it.trim() }.filter { it.isNotEmpty() },
-                            paymentMethod = paymentMethod
+                            description = description.ifEmpty { null },
+                            metadata = user?.metadata,
+                            tags = tags.split(",").map { it.trim() }.filter { it.isNotEmpty() }
                         )
                     )
                 }

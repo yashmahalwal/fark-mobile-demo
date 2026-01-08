@@ -6,7 +6,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.fark.mobiledemo.ui.screens.Product
+import com.fark.mobiledemo.models.Product
 
 @Composable
 fun ProductDialog(
@@ -70,7 +70,8 @@ fun ProductDialog(
                             name = name,
                             price = price.toDoubleOrNull() ?: 0.0,
                             category = category,
-                            inStock = inStock
+                            inStock = inStock,
+                            specifications = product?.specifications ?: emptyList()
                         )
                     )
                 }

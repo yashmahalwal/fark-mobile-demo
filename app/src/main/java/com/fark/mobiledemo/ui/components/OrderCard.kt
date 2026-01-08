@@ -8,7 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.fark.mobiledemo.ui.screens.Order
+import com.fark.mobiledemo.models.Order
 
 @Composable
 fun OrderCard(
@@ -61,7 +61,7 @@ fun OrderCard(
                     shape = MaterialTheme.shapes.small
                 ) {
                     Text(
-                        text = order.status.uppercase(),
+                        text = order.status.name,
                         fontSize = 12.sp,
                         modifier = Modifier.padding(4.dp)
                     )
@@ -93,10 +93,10 @@ fun OrderCard(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
-            if (order.discountCode != null) {
+            order.discountCode?.let { code ->
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "Discount: ${order.discountCode}",
+                    text = "Discount: $code",
                     fontSize = 12.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

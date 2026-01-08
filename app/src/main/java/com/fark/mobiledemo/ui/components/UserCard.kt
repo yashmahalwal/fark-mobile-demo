@@ -8,7 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.fark.mobiledemo.ui.screens.User
+import com.fark.mobiledemo.models.User
 
 @Composable
 fun UserCard(
@@ -67,27 +67,29 @@ fun UserCard(
                 shape = MaterialTheme.shapes.small
             ) {
                 Text(
-                    text = user.status.uppercase(),
+                    text = user.status.name,
                     fontSize = 12.sp,
                     modifier = Modifier.padding(4.dp)
                 )
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            user.description?.let { desc ->
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = desc,
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
 
-            Text(
-                text = user.description,
-                fontSize = 12.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            Text(
-                text = "Tags: ${user.tags.joinToString(", ")}",
-                fontSize = 12.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            if (user.tags.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Tags: ${user.tags.joinToString(", ")}",
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
         }
     }
 }

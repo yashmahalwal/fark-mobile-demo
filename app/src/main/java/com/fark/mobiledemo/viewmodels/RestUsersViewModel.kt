@@ -2,15 +2,15 @@ package com.fark.mobiledemo.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.fark.mobiledemo.api.graphql.GraphQLClient
+import com.fark.mobiledemo.api.rest.RestApiClient
 import com.fark.mobiledemo.models.User
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class UsersViewModel : ViewModel() {
-    private val graphQLClient = GraphQLClient()
+class RestUsersViewModel : ViewModel() {
+    private val restApiClient = RestApiClient()
     
     private val _users = MutableStateFlow<List<User>>(emptyList())
     val users: StateFlow<List<User>> = _users.asStateFlow()
@@ -25,9 +25,9 @@ class UsersViewModel : ViewModel() {
         viewModelScope.launch {
             _isLoading.value = true
             _error.value = null
-            graphQLClient.getUsers().fold(
+            restApiClient.getUsers().fold(
                 onSuccess = { _users.value = it },
-                onFailure = { _error.value = it.message }
+                onFailure = { _error.value = it.message ?: "Unknown error" }
             )
             _isLoading.value = false
         }
@@ -37,9 +37,9 @@ class UsersViewModel : ViewModel() {
         viewModelScope.launch {
             _isLoading.value = true
             _error.value = null
-            graphQLClient.createUser(user).fold(
+            restApiClient.createUser(user).fold(
                 onSuccess = { loadUsers() },
-                onFailure = { _error.value = it.message }
+                onFailure = { _error.value = it.message ?: "Failed to create user" }
             )
             _isLoading.value = false
         }
@@ -49,9 +49,9 @@ class UsersViewModel : ViewModel() {
         viewModelScope.launch {
             _isLoading.value = true
             _error.value = null
-            graphQLClient.updateUser(user).fold(
+            restApiClient.updateUser(user.id, user).fold(
                 onSuccess = { loadUsers() },
-                onFailure = { _error.value = it.message }
+                onFailure = { _error.value = it.message ?: "Failed to update user" }
             )
             _isLoading.value = false
         }
@@ -61,9 +61,9 @@ class UsersViewModel : ViewModel() {
         viewModelScope.launch {
             _isLoading.value = true
             _error.value = null
-            graphQLClient.deleteUser(id).fold(
+            restApiClient.deleteUser(id).fold(
                 onSuccess = { loadUsers() },
-                onFailure = { _error.value = it.message }
+                onFailure = { _error.value = it.message ?: "Failed to delete user" }
             )
             _isLoading.value = false
         }

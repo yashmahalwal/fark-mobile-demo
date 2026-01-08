@@ -8,7 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.fark.mobiledemo.ui.screens.Product
+import com.fark.mobiledemo.models.Product
 
 @Composable
 fun ProductCard(

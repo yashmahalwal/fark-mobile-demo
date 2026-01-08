@@ -10,16 +10,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.fark.mobiledemo.models.Product
 import com.fark.mobiledemo.ui.components.ProductCard
 import com.fark.mobiledemo.ui.dialogs.ProductDialog
-
-data class Product(
-    val id: Int,
-    val name: String,
-    val price: Double,
-    val category: String,
-    val inStock: Boolean
-)
 
 @Composable
 fun ProductsScreen() {

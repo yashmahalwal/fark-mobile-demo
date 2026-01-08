@@ -10,25 +10,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.fark.mobiledemo.models.Order
 import com.fark.mobiledemo.ui.components.OrderCard
 import com.fark.mobiledemo.ui.dialogs.OrderDialog
-
-data class ShippingAddress(
-    val street: String,
-    val city: String,
-    val zipCode: String,
-    val country: String
-)
-
-data class Order(
-    val id: Int,
-    val userId: Int,
-    val productIds: List<Int>,
-    val status: String,
-    val total: Double,
-    val discountCode: String?,
-    val shippingAddress: ShippingAddress
-)
 
 @Composable
 fun OrdersScreen() {
@@ -80,10 +64,10 @@ fun OrdersScreen() {
                 order = editingOrder,
                 onDismiss = { showDialog = false },
                 onSave = { order ->
-                    if (editingOrder != null) {
-                        orders = orders.map { if (it.id == order.id) order else it }
+                    orders = if (editingOrder != null) {
+                        orders.map { if (it.id == order.id) order else it }
                     } else {
-                        orders = orders + order.copy(id = (orders.maxOfOrNull { it.id } ?: 0) + 1)
+                        orders + order.copy(id = (orders.maxOfOrNull { it.id } ?: 0) + 1)
                     }
                     showDialog = false
                 }

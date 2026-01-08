@@ -1,54 +1,6 @@
 package com.fark.mobiledemo.api.rest
 
-import com.fark.mobiledemo.models.User
-import com.fark.mobiledemo.models.Order
-import com.fark.mobiledemo.models.Product
-import retrofit2.Response
-import retrofit2.http.*
-
-interface RestApiService {
-    @GET("users/{id}")
-    suspend fun getUser(@Path("id") id: Int): Response<User>
-    
-    @GET("users")
-    suspend fun getUsers(): Response<List<User>>
-    
-    @POST("users")
-    suspend fun createUser(@Body user: CreateUserRequest): Response<CreateUserResponse>
-    
-    @PUT("users/{id}")
-    suspend fun updateUser(@Path("id") id: Int, @Body user: CreateUserRequest): Response<UpdateUserResponse>
-    
-    @DELETE("users/{id}")
-    suspend fun deleteUser(@Path("id") id: Int): Response<DeleteUserResponse>
-    
-    @GET("orders/{id}")
-    suspend fun getOrder(@Path("id") id: Int): Response<Order>
-    
-    @GET("orders")
-    suspend fun getOrders(): Response<List<Order>>
-    
-    @POST("orders")
-    suspend fun createOrder(@Body order: CreateOrderRequest): Response<CreateOrderResponse>
-    
-    @PUT("orders/{id}")
-    suspend fun updateOrder(@Path("id") id: Int, @Body order: CreateOrderRequest): Response<UpdateOrderResponse>
-    
-    @DELETE("orders/{id}")
-    suspend fun deleteOrder(@Path("id") id: Int): Response<DeleteOrderResponse>
-    
-    @GET("products")
-    suspend fun getProducts(): Response<List<Product>>
-    
-    @POST("products")
-    suspend fun createProduct(@Body product: CreateProductRequest): Response<CreateProductResponse>
-    
-    @PUT("products/{id}")
-    suspend fun updateProduct(@Path("id") id: Int, @Body product: CreateProductRequest): Response<UpdateProductResponse>
-    
-    @DELETE("products/{id}")
-    suspend fun deleteProduct(@Path("id") id: Int): Response<DeleteProductResponse>
-}
+// Request/Response data classes for REST API
 
 data class CreateUserRequest(
     val email: String,
