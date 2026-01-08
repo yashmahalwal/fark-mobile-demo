@@ -21,10 +21,6 @@ class ProductsViewModel : ViewModel() {
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
     
-    init {
-        loadProducts()
-    }
-    
     fun loadProducts() {
         viewModelScope.launch {
             _isLoading.value = true
@@ -71,6 +67,10 @@ class ProductsViewModel : ViewModel() {
             )
             _isLoading.value = false
         }
+    }
+    
+    fun clearError() {
+        _error.value = null
     }
 }
 

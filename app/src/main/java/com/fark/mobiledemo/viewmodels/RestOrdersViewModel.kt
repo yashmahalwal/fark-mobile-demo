@@ -21,10 +21,6 @@ class RestOrdersViewModel : ViewModel() {
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
     
-    init {
-        loadOrders()
-    }
-    
     fun loadOrders() {
         viewModelScope.launch {
             _isLoading.value = true
@@ -47,6 +43,34 @@ class RestOrdersViewModel : ViewModel() {
             )
             _isLoading.value = false
         }
+    }
+    
+    fun updateOrder(order: Order) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            _error.value = null
+            restApiClient.updateOrder(order.id, order).fold(
+                onSuccess = { loadOrders() },
+                onFailure = { _error.value = it.message ?: "Failed to update order" }
+            )
+            _isLoading.value = false
+        }
+    }
+    
+    fun deleteOrder(id: Int) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            _error.value = null
+            restApiClient.deleteOrder(id).fold(
+                onSuccess = { loadOrders() },
+                onFailure = { _error.value = it.message ?: "Failed to delete order" }
+            )
+            _isLoading.value = false
+        }
+    }
+    
+    fun clearError() {
+        _error.value = null
     }
 }
 

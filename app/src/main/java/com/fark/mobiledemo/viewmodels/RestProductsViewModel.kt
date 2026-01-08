@@ -21,10 +21,6 @@ class RestProductsViewModel : ViewModel() {
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
     
-    init {
-        loadProducts()
-    }
-    
     fun loadProducts() {
         viewModelScope.launch {
             _isLoading.value = true
@@ -35,6 +31,46 @@ class RestProductsViewModel : ViewModel() {
             )
             _isLoading.value = false
         }
+    }
+    
+    fun createProduct(product: Product) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            _error.value = null
+            restApiClient.createProduct(product).fold(
+                onSuccess = { loadProducts() },
+                onFailure = { _error.value = it.message ?: "Failed to create product" }
+            )
+            _isLoading.value = false
+        }
+    }
+    
+    fun updateProduct(product: Product) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            _error.value = null
+            restApiClient.updateProduct(product.id, product).fold(
+                onSuccess = { loadProducts() },
+                onFailure = { _error.value = it.message ?: "Failed to update product" }
+            )
+            _isLoading.value = false
+        }
+    }
+    
+    fun deleteProduct(id: Int) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            _error.value = null
+            restApiClient.deleteProduct(id).fold(
+                onSuccess = { loadProducts() },
+                onFailure = { _error.value = it.message ?: "Failed to delete product" }
+            )
+            _isLoading.value = false
+        }
+    }
+    
+    fun clearError() {
+        _error.value = null
     }
 }
 
